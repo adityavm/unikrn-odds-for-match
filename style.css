@@ -83,11 +83,15 @@ body {
 }
 
 .event.without-data {
-  width: 140px;
+  width: 150px;
   font-size: 14px;
+  flex-direction: row;
+  align-items: center;
+  padding: 10px 10px 0;
 }
 
 .event.without-data img.icon {
-  width: 1em;
+  width: 24px;
+  height: 24px;
   margin-right: 5px;
 }
