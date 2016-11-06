@@ -1,0 +1,66 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto");
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: #ddd;
+  height: 80px;
+}
+
+body {
+  background-color: #fff;
+  padding: 0 10px;
+  height: 75px;
+}
+
+.event {
+  padding-top: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.team {
+  display: flex;
+  align-items: flex-end;
+  font-family: "Roboto";
+  flex: 1;
+}
+
+.team .odds {
+  font-size: 12px;
+  color: #e24046;
+  margin: 0 5px;
+}
+
+.team .name {
+  font-size: 20px;
+  color: #1c1c1c;
+  line-height: 1em;
+}
+
+.div {
+  font-size: 12px;
+  color: #aaa;
+  margin: 0 10px;
+}
+
+.team-2 .name { order: 2; }
+
+.event-link {
+  display: inline-block;
+  padding: 5px 0 10px;
+  text-decoration: none;
+  color: #666;
+  cursor: pointer;
+}
+
+.event-link:focus {
+  outline: none;
+}
+
+.event-link:hover {
+  text-decoration: underline;
+}
