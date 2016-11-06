@@ -99,7 +99,7 @@ function fetchEvents(success, error) {
         name: e.markets[1].team_name,
         odds: e.markets[1].odd,
       }];
-      return [e.eid, teams, [].concat(streams)];
+      return [e.eid, teams, [].concat(streams), e.name];
     })
     // only valid events
     .filter(function(e) {
@@ -172,9 +172,11 @@ document.addEventListener("DOMContentLoaded", function() {
           ev = event[0],
           team1 = document.querySelector(".team-1"),
           team2 = document.querySelector(".team-2"),
+          name = document.querySelector(".event-name"),
           link = document.querySelector(".event-link");
 
         // populate html
+        name.innerHTML = ev[3];
         team1.innerHTML = getTmpl({ name: ev[1][0].name, odds: ev[1][0].odds });
         team2.innerHTML = getTmpl({ name: ev[1][1].name, odds: ev[1][1].odds });
         link.href = "https://unikrn.com/s/e" + ev[0];
