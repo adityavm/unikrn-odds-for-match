@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css?family=Roboto");
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
 }
@@ -95,4 +96,8 @@ body {
   width: 24px;
   height: 24px;
   margin-right: 5px;
+}
+
+iframe {
+  display: none;
 }

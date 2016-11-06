@@ -24,7 +24,7 @@ function getCurrentTabUrl(cb) {
  * @param  {String} url URL to fetch
  * @return {Object}     { successHandler, errorHandler }
  */
-function xhr(url) {
+function xhr(url, post) {
   var
     data = null,
     lastResponse = null,
@@ -35,7 +35,8 @@ function xhr(url) {
     _successCb = function(){ },
     _errorCb = function(){ };
 
-  request.open("GET", url);
+  request.open(post ? "POST" : "GET", url);
+  request["content-type"] = "application/json";
   request.responseType = "json";
   request.onload = function() {
     lastResponse = request.response;
@@ -48,7 +49,7 @@ function xhr(url) {
     data = lastResponse.data;
     _successCb(data);
   }
-  request.send();
+  request.send(JSON.stringify(post));
 
   return {
     onSuccess: function(cb) { _successCb = cb; },
@@ -64,10 +65,8 @@ function xhr(url) {
  */
 function fetchEvents(success, error) {
 
-  var storage = localStorage.getItem("events");
-  storage = storage ? JSON.parse(storage) : null;
-
   // if stored data is still fresh
+  var storage = getItem("events");
   if (storage && +new Date() <= storage.expiry) {
     success(storage.items);
     return storage.items;
@@ -107,13 +106,34 @@ function fetchEvents(success, error) {
     });
 
     console.log(streamMap);
-    localStorage.setItem("events", JSON.stringify({ items: streamMap, expiry: +new Date() + 300000})); // store for 15 mins
+    setItem("events", { items: streamMap, expiry: +new Date() + 300000}); // store for 15 mins
     success(streamMap); // next
   });
 
   getEvents.onError(function(data){
     error(data);
   });
+}
+
+function fetchPending(success, error) {
+
+  var pending = getItem("pending");
+  if (pending && +new Date() < pending.expiry) {
+    success(pending.items);
+    return pending.items;
+  }
+
+  var session = getItem("session").session;
+  var getPending = xhr("https://unikrn.com/apiv2/user/pendingbets/coin", { session_id: session });
+
+  getPending.onSuccess(function(data){
+    console.log(data.items);
+  });
+
+  getPending.onError(function(data){
+    console.error(data);
+  })
+
 }
 
 /**
@@ -136,20 +156,82 @@ function getTmpl(data) {
   return str;
 }
 
+// show no data message
 function markNoData() {
   document.querySelector(".without-data").classList.add("show");
   document.querySelector(".with-data").classList.remove("show");
 }
 
+// show data
 function markYesData() {
   document.querySelector(".without-data").classList.remove("show");
   document.querySelector(".with-data").classList.add("show");
+}
+
+// add item to localstorage
+function setItem(key, val) {
+  localStorage.setItem(key, JSON.stringify(val));
+}
+
+// get item from localstorage
+function getItem(key) {
+  var item = localStorage.getItem(key);
+  return item ? JSON.parse(item) : null;
+}
+
+/**
+ * gets session id from main unikrn site
+ * @return { onSuccess, onError }
+ */
+function getSessionId(success, error) {
+
+  var oldSession = getItem("session");
+  if (oldSession && +new Date() < oldSession.expiry) {
+    success(oldSession.sessionId);
+    return oldSession.sessionId;
+  }
+
+  var iframe = document.querySelector("iframe");
+  iframe.src = "https://delta.dev.unikrn.com/msgBus";
+
+  window.addEventListener("message", function(msg) {
+    if (!msg.data) {
+      error(msg);
+    }
+
+    var session = msg.data.sessionId;
+    setItem("session", {
+      session: session,
+      expiry: +new Date() + 43200000,
+    });
+    success(session);
+  });
+
+  iframe.onload = function(){
+    iframe.contentWindow.postMessage({ request: "sessionId"}, "*");
+  }
 }
 
 /*
  * main
  */
 document.addEventListener("DOMContentLoaded", function() {
+  getSessionId(
+    function(pending) {
+      fetchPending(
+        function(data) {
+          console.log(data);
+        },
+        function(data) {
+          console.error(data);
+        }
+      );
+    },
+    function(error) {
+      console.log(error);
+    }
+  );
+
   fetchEvents(
     function(data) {
       getCurrentTabUrl(function(url) {
