@@ -85,7 +85,7 @@ function fetchEvents(success, error) {
           s.stream_type !== "stream_twitch" ||
           s.is_live === false
         ) return null;
-        var channel = s.video_html.match(/\?channel=(\w+)/)[1];
+        var channel = s.video_html.match(/\?channel=(\w+)/)[1].toLowerCase();
         return channel;
       });
 
@@ -160,7 +160,9 @@ document.addEventListener("DOMContentLoaded", function() {
         };
 
         // match to event
-        var event = data.filter(function(ev) { return ev[2].indexOf(channel[1]) > -1; });
+        var
+          chnl = channel[1].toLowerCase(),
+          event = data.filter(function(ev) { return ev[2].indexOf(chnl) > -1; });
 
         if (event.length === 0) {
           markNoData();
