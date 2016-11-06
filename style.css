@@ -18,8 +18,12 @@ body {
 
 .event {
   padding-top: 20px;
-  display: flex;
+  display: none;
   align-items: center;
+}
+
+.event.show {
+  display: flex;
 }
 
 .team {
@@ -63,4 +67,14 @@ body {
 
 .event-link:hover {
   text-decoration: underline;
+}
+
+.event.without-data {
+  width: 140px;
+  font-size: 14px;
+}
+
+.event.without-data img.icon {
+  width: 1em;
+  margin-right: 5px;
 }

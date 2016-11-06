@@ -107,7 +107,7 @@ function fetchEvents(success, error) {
     });
 
     console.log(streamMap);
-    localStorage.setItem("events", JSON.stringify({ items: streamMap, expiry: +new Date() + 900000})); // store for 15 mins
+    localStorage.setItem("events", JSON.stringify({ items: streamMap, expiry: +new Date() + 300000})); // store for 15 mins
     success(streamMap); // next
   });
 
@@ -133,8 +133,17 @@ function getTmpl(data) {
     str = str.replace(re, data[i]);
   };
 
-  console.log(str, data);
   return str;
+}
+
+function markNoData() {
+  document.querySelector(".without-data").classList.add("show");
+  document.querySelector(".with-data").classList.remove("show");
+}
+
+function markYesData() {
+  document.querySelector(".without-data").classList.remove("show");
+  document.querySelector(".with-data").classList.add("show");
 }
 
 /*
@@ -145,26 +154,35 @@ document.addEventListener("DOMContentLoaded", function() {
     function(data) {
       getCurrentTabUrl(function(url) {
         var channel = url.match(/https?:\/\/(?:www\.)?twitch\.tv\/([^\/]+)/);
-        if (!channel[1]) return;
+        if (!channel) {
+          markNoData();
+          return;
+        };
 
         // match to event
         var event = data.filter(function(ev) { return ev[2].indexOf(channel[1]) > -1; });
 
-          // if more than one match, take the latest
-          var
-            ev = event[0],
-            team1 = document.querySelector(".team-1"),
-            team2 = document.querySelector(".team-2"),
-            link = document.querySelector(".event-link");
+        if (event.length === 0) {
+          markNoData();
+          return;
+        }
 
-          // populate html
-          team1.innerHTML = getTmpl({ name: ev[1][0].name, odds: ev[1][0].odds });
-          team2.innerHTML = getTmpl({ name: ev[1][1].name, odds: ev[1][1].odds });
-          link.href = "https://unikrn.com/s/e" + ev[0];
-        });
-      },
-      function(data) {
-        alert(data);
-      }
-    );
+        // if more than one match, take the latest
+        var
+          ev = event[0],
+          team1 = document.querySelector(".team-1"),
+          team2 = document.querySelector(".team-2"),
+          link = document.querySelector(".event-link");
+
+        // populate html
+        team1.innerHTML = getTmpl({ name: ev[1][0].name, odds: ev[1][0].odds });
+        team2.innerHTML = getTmpl({ name: ev[1][1].name, odds: ev[1][1].odds });
+        link.href = "https://unikrn.com/s/e" + ev[0];
+        markYesData();
+      });
+    },
+    function(data) {
+      alert(data);
+    }
+  );
 });
